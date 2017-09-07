@@ -40,3 +40,9 @@ function unicodeSanitize(string) {
   }
   return target.join('');
 }
+
+export function addParams(urlString, params) {
+  const parsedUrl = url.parse(urlString, true);
+  parsedUrl.query = { ...parsedUrl.query, ...params };
+  return url.format(parsedUrl);
+}
