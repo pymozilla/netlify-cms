@@ -4,6 +4,20 @@ function getUrl(url, direct) {
   return `${ direct ? '/#' : '' }${ url }`;
 }
 
+export function removeAccents(string) {
+  const decomposed = string.normalize("NFD");
+  const runes = decomposed.split('');
+  const cleaned = runes.map((r) => {
+    const charCode = r.charCodeAt(0);
+    if ((charCode >= 0x0300) && (charCode <= 0x036F)) {
+      return;
+    }
+    return r;
+  });
+  const composed = cleaned.join('').normalize("NFC");
+  return composed;
+}
+
 export function getCollectionUrl(collectionName, direct) {
   return getUrl(`/collections/${ collectionName }`, direct);
 }
@@ -13,7 +27,8 @@ export function getNewEntryUrl(collectionName, direct) {
 }
 
 export function urlize(string) {
-  const sanitized = makePathSanitized(string);
+  const anglicized = removeAccents(string);
+  const sanitized = makePathSanitized(anglicized).replace(/[^\w\d-._~]/g, '');
   const parsedURL = url.parse(sanitized);
 
   return url.format(parsedURL);
@@ -34,7 +49,7 @@ function unicodeSanitize(string) {
     const r = runes[i];
     if (r == '%' && i+2 < string.length && string.substr(i+1, 2).match(/^[0-9a-f]+$/)) {
       target = target.concat([r, runes[i+1], runes[i+2]]);
-    } else if (r.match(/[\w .\/\\_#\+-]/u)) {
+    } else if (r.match(/[\w .\/\\_#\+-~]/u)) {
       target.push(r);
     }
   }
